@@ -8,6 +8,6 @@ branches:
 install:
 - curl -fsSL get.nextflow.io | bash
 script:
-- sudo -s
+- sudo chown -R travis:travis /home/travis/
 - echo "docker.enabled = true" >> nextflow.config
 - ./nextflow run main.nf

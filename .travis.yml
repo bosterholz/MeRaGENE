@@ -10,4 +10,5 @@ install:
 - sudo apt-get -qq update
 - curl -fsSL get.nextflow.io | bash
 script:
-- ./nextflow run main.nf -with-docker
+  echo "docker.enabled = true" > nextflow.config
+- ./nextflow run main.nf

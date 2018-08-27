@@ -10,4 +10,5 @@ install:
 script:
 - sudo chown -R travis:travis /home/travis/
 - echo "docker.enabled = true" >> nextflow.config
+- echo "docker.runOptions = '-u travis:travis'" >> nextflow.config
 - ./nextflow run main.nf

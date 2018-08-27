@@ -1,0 +1,13 @@
+sudo: required
+jdk:
+- openjdk8
+services:
+- docker
+branches:
+  only:
+  - dev  
+install:
+- sudo apt-get -qq update
+- curl -fsSL get.nextflow.io | bash
+script:
+- ./nextflow run main.nf -with-docker

@@ -4,5 +4,6 @@ nextflow
 # log files
 .*
 
-# don’t ignore keep files
+# don’t ignore
 !.keep
+!.travis.yml

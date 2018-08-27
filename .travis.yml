@@ -9,5 +9,4 @@ install:
 - curl -fsSL get.nextflow.io | bash
 script:
 - echo "docker.enabled = true" >> nextflow.config
-- echo "docker.runOptions = '-u $(id -u):$(id -g)'" >> nextflow.config
 - sudo ./nextflow run main.nf

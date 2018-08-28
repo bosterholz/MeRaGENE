@@ -220,7 +220,7 @@ process createHTML {
 	script:
 	"""
 	python /app/makeHtml.py ./ ./ "${seqName}"
-	cp -r /app/templates ./
+	cp -r /app/templates/* ./
 	python /app/webpage2html.py -s ./out.html > report.html
 	"""
 }

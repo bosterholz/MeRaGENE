@@ -205,8 +205,8 @@ process createHTML {
 
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
-	container 'bosterholz/meragene@sha256:cbc39e76b6fd693acd9923e250061bff97f0ee7874e0cecbf4d22d25ee055972'
-
+	container 'bosterholz/meragene:python'
+	
 	input:
 	set val(seqName), file(png) from createChart_out.collect()
 	set val(seqName2), file(dotplot) from createPlot_out.groupTuple()
@@ -219,8 +219,9 @@ process createHTML {
 	// In /app there are the "bootstrap" and "vendor" folders webpage2html needs to build an independant html.	
 	script:
 	"""
-	python /app/makeHtml.py ./ /app/ "${seqName}"
-	python /app/webpage2html.py -s /app/out.html > report.html
+	python /app/makeHtml.py ./ ./ "${seqName}"
+	cp -r /app/templates ./
+	python /app/webpage2html.py -s ./out.html > report.html
 	"""
 }
 

@@ -17,10 +17,20 @@ vim: syntax=groovy
  * Wiebke Paetzold
  * Annika Fust
  * Madis Rumming
+ * Alexander Sczyrba
+ * Andreas Schlueter
  */
 
 // Basic parameters. Parameters defined in the .config file will overide these
-params.input_folder = "$baseDir/data/test_data/genome"
+
+// If the test run flag ist set, use test input
+if (params.testRun){
+	params.input_folder = "$baseDir/data/test_data/genome"	
+} else {
+	// Input folder string must not be completely empty. Empty strings pass the detection producing errors.
+	params.input_folder = " "
+}
+
 params.blast = 'blastx'
 params.blast_cpu = 4
 // Pick the right blast-db depending on the blast version used
@@ -38,6 +48,7 @@ params.nfRequiredVersion = '0.30.0'
 params.version = '0.1.19'
 params.s3 = ''
 params.s3_container = 'MeRaGENE'
+params.testRun = ''
 // If docker is used the blastDB path will not be included in the volume mountpoint because it is a path, not a file
 // This dummy file is inside the databse folder doing the job, so that the path is mounted into the docker instance 
 docker_anker = file("$baseDir/data/databases/docker_anker")
@@ -81,7 +92,7 @@ query = Channel.fromPath( "${params.input_folder}/*", type: 'file' )
 outDir = file(params.output_folder)
 } 
 
-// Set input parameters:
+// Set general input parameters:
 blast_db = Channel.fromPath(params.blast_db, type: 'file' )
 		.ifEmpty { error "No database found in your blast_db directory ${params.blast_db}"}
 
@@ -249,16 +260,18 @@ def help() {
 	log.info " Usage:  nextflow main.nf [options] [arg...]"
 	log.info ""
 	log.info " Options:"
-	log.info "           --help    Shows this help page"
-	log.info "           --s3      S3/Swift Mode. Input and Output are handled "
-	log.info "                     via S3/Swift by a minio client. A project folder"
-	log.info "                     located in the object storage root has to be selected."
-	log.info "                     This folder will be used to get the input data and upload"
-	log.info "                     the results. Use --s3_container \"folder\" to specify."
-	log.info "                     The input fasta has to be inside an \"input\" folder "
-	log.info "                     in the project folder. The S3/Swift credentials"
- 	log.info "                     are added to the \"nextflow.config\" in form of:"
-	log.info "                     env.MC_HOSTS_openstack = 'https://ID:KEY@ENDPOINT:PORT'"
+	log.info "           --help      Shows this help page"
+	log.info "           --s3        S3/Swift Mode. Input and Output are handled "
+	log.info "                       via S3/Swift by a minio client. A project folder"
+	log.info "                       located in the object storage root has to be selected."
+	log.info "                       This folder will be used to get the input data and upload"
+	log.info "                       the results. Use --s3_container \"folder\" to specify."
+	log.info "                       The input fasta has to be inside an \"input\" folder "
+	log.info "                       in the project folder. The S3/Swift credentials"
+ 	log.info "                       are added to the \"nextflow.config\" in form of:"
+	log.info "                       env.MC_HOSTS_openstack = 'https://ID:KEY@ENDPOINT:PORT'"
+	log.info "           --testRun   Test your installation by running MeRaGENE with test data."
+	log.info "                       Just set this flag. MeRaGENE will do the rest."	
 	log.info ""
 	log.info " Arguments:"
 	log.info "           --input_folder      Set new input folder path "

@@ -10,4 +10,4 @@ install:
 script:
 - echo "docker.enabled = true" >> nextflow.config
 - echo "docker.runOptions = '-u $(id -u):$(id -g)'" >> nextflow.config
-- ./nextflow run main.nf
+- ./nextflow run main.nf --testRun

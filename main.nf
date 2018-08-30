@@ -22,7 +22,7 @@ vim: syntax=groovy
  */
 
 // Basic parameters. Parameters defined in the .config file will overide these
-
+params.testRun = ''
 // If the test run flag ist set, use test input
 if (params.testRun){
 	params.input_folder = "$baseDir/data/test_data/genome"	
@@ -48,7 +48,6 @@ params.nfRequiredVersion = '0.30.0'
 params.version = '0.1.19'
 params.s3 = ''
 params.s3_container = 'MeRaGENE'
-params.testRun = ''
 // If docker is used the blastDB path will not be included in the volume mountpoint because it is a path, not a file
 // This dummy file is inside the databse folder doing the job, so that the path is mounted into the docker instance 
 docker_anker = file("$baseDir/data/databases/docker_anker")

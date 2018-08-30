@@ -1,5 +1,6 @@
 #!/usr/bin/env nextflow
 
+// vim higlighting tag
 /*
 vim: syntax=groovy
 -*- mode: groovy;-*-
@@ -27,12 +28,14 @@ params.testRun = ''
 if (params.testRun){
 	params.input_folder = "$baseDir/data/test_data/genome"	
 } else {
-	// Input folder string must not be completely empty. Empty strings pass the detection producing errors.
-	params.input_folder = " "
+	// Input folder string must not be completely empty. Empty strings pass the detection, producing errors.
+	params.input_folder = "$baseDir/input"
 }
 
 params.blast = 'blastx'
 params.blast_cpu = 4
+// Default e-value copied from blast
+params.evalue = '10'
 // Pick the right blast-db depending on the blast version used
 if( params.blast.equals('blastx') || params.blast.equals('blastp') ){
 	params.blast_db = "$baseDir/data/databases/resFinderDB_23082018/*AA.fsa"
@@ -45,7 +48,7 @@ if( params.blast.equals('blastx') || params.blast.equals('blastp') ){
 params.output_folder = "$baseDir/out"
 params.help = ''
 params.nfRequiredVersion = '0.30.0'
-params.version = '0.1.19'
+params.version = '0.1.24'
 params.s3 = ''
 params.s3_container = 'MeRaGENE'
 // If docker is used the blastDB path will not be included in the volume mountpoint because it is a path, not a file
@@ -124,7 +127,7 @@ process blast {
 	// After the input is blasted, the output is checked for contend. If it is empty, it is renamed to "empty.blast" to be removed later. 
   	"""
 	head ${docker_anker}
-	${params.blast} -db ${db} -query ${seqFile} -num_threads ${params.blast_cpu} -outfmt "6 qseqid sseqid pident length qlen slen mismatch gapopen qstart qend sstart send evalue bitscore qcovs" -out ${seqName}_${dbName}.blast
+	${params.blast} -db ${db} -query ${seqFile} -num_threads ${params.blast_cpu} -evalue ${params.evalue} -outfmt "6 qseqid sseqid pident length qlen slen mismatch gapopen qstart qend sstart send evalue bitscore qcovs" -out ${seqName}_${dbName}.blast
 	if [ ! -s ${seqName}_${dbName}.blast ]; then mv ${seqName}_${dbName}.blast empty.blast; fi 
 	"""
 }
@@ -282,6 +285,8 @@ def help() {
 	log.info "                               (default: ${params.blast})"
 	log.info "           --blast_cpu         Set the amount of cpus used per blast process"
 	log.info "                               (default: ${params.blast_cpu})"
+	log.info "           --evalue            Set the e-value used for the blast processes"
+	log.info "                               (default: ${params.evalue})"
 	log.info "           --s3_container      Set the project folder used in S3/Swift mode"
 	log.info "                               (default: ${params.s3_container})"
 	log.info "                     "
@@ -302,7 +307,8 @@ def runMessage() {
 	log.info "output_folder : " + params.output_folder} 
 	log.info "blast version : " + params.blast 
 	log.info "blast_db      : " + params.blast_db 
-	log.info "blast_cpu     : " + params.blast_cpu 
+	log.info "blast_cpu     : " + params.blast_cpu
+	log.info "evalue        : " + params.evalue  
 	log.info "\n"
 }
 

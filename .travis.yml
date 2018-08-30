@@ -11,4 +11,6 @@ script:
 - echo "docker.enabled = true" >> nextflow.config
 - echo "docker.runOptions = '-u $(id -u):$(id -g)'" >> nextflow.config
 - ./nextflow run main.nf --testRun
+- diff data/test_data/example_output/clostridium_botulinum/ out/clostridium_botulinum/
+- diff data/test_data/example_output/clostridium_botulinum/ out/clostridium_botulinum/ | wc -l
 - if [ $(diff data/test_data/example_output/clostridium_botulinum/ out/clostridium_botulinum/ | wc -l) -eq "5" ]; then echo "diff test passed"; else echo "diff test failed"; exit 1 ;fi 

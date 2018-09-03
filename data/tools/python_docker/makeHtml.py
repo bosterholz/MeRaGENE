@@ -4,17 +4,18 @@ import os
 import sys
 from jinja2 import Environment, FileSystemLoader
 
- 
+# Input block  
 tempPath = os.path.dirname(os.path.abspath(__file__))
 inputFolder = sys.argv[1]
 outputFolder = sys.argv[2]
 seqName = sys.argv [3]
+# Build environment for rendering
 template_env = Environment(
     autoescape=False,
     trim_blocks=False,
     loader=FileSystemLoader(os.path.join(tempPath, 'templates'))
     )
-
+# Search for all dotplot pictures in the input directory
 def getDotPlots():
     
     png = []
@@ -26,6 +27,7 @@ def getDotPlots():
     png.sort()
     return png
 
+# Search for all barchart pictures in the input directory
 def getBarChart():
     
     png = []
@@ -38,9 +40,10 @@ def getBarChart():
     png.sort()
     return png
 
+# Render the given template / Fill the template with all data given by create_html() 
 def render_template(template_filename, context):
     return template_env.get_template(template_filename).render(context)
- 
+# Get all the pictures, stuff them into the template (render) and create the html 
 def create_html():
     fname = os.path.join(outputFolder,'out.html')
     dotP = getDotPlots()

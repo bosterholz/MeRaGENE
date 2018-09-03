@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
     <meta charset="utf-8">
@@ -65,8 +64,15 @@
 		<p>The threshold used can be seen in the plot header.</p>
 		<p>Default: Param 15 >= 1.0 (Coverage >= 100%) | 2 >= 98 (Identity >= 98%)</p>
 		<hr/>
+		<!--This style tag must definitely be placed here. If situated in the header it will be overwritten-->
+		<style>
+    		    .img-fluid {
+        	    max-width: 80%;
+		    height: auto;
+    		    }
+		</style>
 		{% for pic in barC %}
-		<img src="{{ pic }}" class="img-fluid" alt="Responsive image">
+		<img src="{{ pic }}" class="img-fluid mx-auto" alt="Responsive barchart">
 		<br>
 		<br>
 		<br>
@@ -80,7 +86,7 @@
 		and the input sequence. 100% meaning the compared parts are identical.</p>
 		<hr/>
 		{% for pic in dotP %}
-		<img src="{{ pic }}" class="img-fluid" alt="Responsive image">
+		<img src="{{ pic }}" class="img-fluid mx-auto" alt="Responsive dotplot">
 		<br>
 		<br>
 		{% endfor %}

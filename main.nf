@@ -50,7 +50,7 @@ params.identity = '98'
 params.output_folder = "$baseDir/out"
 params.help = ''
 params.nfRequiredVersion = '0.30.0'
-params.version = '0.1.27'
+params.version = '0.1.30'
 params.s3 = ''
 params.s3_container = 'MeRaGENE'
 // If docker is used the blastDB path will not be included in the volume mountpoint because it is a path, not a file
@@ -171,7 +171,7 @@ process createDotPlots {
 	
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
-	container 'bosterholz/meragene@sha256:29e7c11f2754f22f98be57852de68eeb830cb9fecfc9d7e9bda9f3bc12a9f35c'
+	container 'bosterholz/meragene@sha256:a0d3de9697f45c4ceb9495668a47b06374cf9193f7e29803b987972b6696e806'
 	
 	input:
 	set seqName, file(coverage) from getCoverage_output_dotPlot
@@ -195,7 +195,7 @@ process createBarChart {
 
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
-	container 'bosterholz/meragene@sha256:29e7c11f2754f22f98be57852de68eeb830cb9fecfc9d7e9bda9f3bc12a9f35c'
+	container 'bosterholz/meragene@sha256:a0d3de9697f45c4ceb9495668a47b06374cf9193f7e29803b987972b6696e806'
 	// For createBarChart.py to work, all blast_cov files have to be present. collect() does not work, creating a multi-set Nextflow cannot handle.
 	// So groupTuple() is used collecting all input files, grouping them by their seqName to return a single set (seqName, blast_cov[array])  
 	input:
@@ -219,7 +219,7 @@ process createHTML {
 
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
-	container 'bosterholz/meragene@sha256:29e7c11f2754f22f98be57852de68eeb830cb9fecfc9d7e9bda9f3bc12a9f35c'
+	container 'bosterholz/meragene@sha256:a0d3de9697f45c4ceb9495668a47b06374cf9193f7e29803b987972b6696e806'
 
 	input:
 	set val(seqName), file(png) from createChart_out.collect()

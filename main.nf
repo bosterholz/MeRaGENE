@@ -45,10 +45,12 @@ if( params.blast.equals('blastx') || params.blast.equals('blastp') ){
 	println("Your Blast Version is not supported.")
 	exit(1)}
 
+params.coverage = '100'
+params.identity = '98'
 params.output_folder = "$baseDir/out"
 params.help = ''
 params.nfRequiredVersion = '0.30.0'
-params.version = '0.1.24'
+params.version = '0.1.27'
 params.s3 = ''
 params.s3_container = 'MeRaGENE'
 // If docker is used the blastDB path will not be included in the volume mountpoint because it is a path, not a file
@@ -69,7 +71,7 @@ runMessage()
 // If S3 mode is used the starting query has to come out of S3
 if(params.s3){
 	// Get S3 input files and create output folder
-	process getS3Input_createOutput{
+	process getS3Input{
 		
 		output:
 		file "*" into s3_input
@@ -77,7 +79,6 @@ if(params.s3){
 		script:
 		"""
 		${baseDir}/data/tools/minio/mc cp --recursive openstack/${params.s3_container}/input/ .
-		${baseDir}/data/tools/minio/mc mb openstack/${params.s3_container}/output/ 
 		"""
 	}
 
@@ -203,10 +204,11 @@ process createBarChart {
 	output:
 	set val(seqName), file("*.png") into createChart_out
 	
-	// A prebuild executable of the createDotPlot.py is used to execute this process
+	// Python script which is executed inside the python docker-container. 
+	// Input: createBarChart.py "directory with input .cov files" "coverage threshold" "identity threshold"
 	script:
 	"""
-	python /app/createBarChart.py ./
+	python /app/createBarChart.py ./ ${params.coverage} ${params.identity} 
 	"""
 }
 
@@ -218,7 +220,7 @@ process createHTML {
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
 	container 'bosterholz/meragene@sha256:36bfb52dcd65c4ac5124c0937ecb33938f584a011a23d0f34e8b97f85945e860'
-	
+
 	input:
 	set val(seqName), file(png) from createChart_out.collect()
 	set val(seqName2), file(dotplot) from createPlot_out.groupTuple()
@@ -286,6 +288,10 @@ def help() {
 	log.info "                               (default: ${params.blast_cpu})"
 	log.info "           --evalue            Set the e-value used for the blast processes"
 	log.info "                               (default: ${params.evalue})"
+	log.info "           --coverage          Set the coverage threshold used for the barchart plot"
+	log.info "                               (default: ${params.coverage} [unit = percent])"
+	log.info "           --identity          Set the identity threshold used for the barchart plot"
+	log.info "                               (default: ${params.identity} [unit = percent])"
 	log.info "           --s3_container      Set the project folder used in S3/Swift mode"
 	log.info "                               (default: ${params.s3_container})"
 	log.info "                     "
@@ -307,7 +313,9 @@ def runMessage() {
 	log.info "blast version : " + params.blast 
 	log.info "blast_db      : " + params.blast_db 
 	log.info "blast_cpu     : " + params.blast_cpu
-	log.info "evalue        : " + params.evalue  
+	log.info "evalue        : " + params.evalue
+	log.info "coverage      : " + params.coverage + " (%)"
+	log.info "identity      : " + params.identity + " (%)" 
 	log.info "\n"
 }
 

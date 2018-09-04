@@ -10,10 +10,11 @@ import sys
 pathToDir = sys.argv[1]
 # Get all the files in a directory
 dirList = os.listdir(pathToDir)
-# Array for entries of format [file_name : numer_of_entries_above_thresshold]
+# Array for entries of format [file_name : numer_of_entries_above_threshold]
 dataArray = []
 # If values not given, use default
-filter_1 = sys.argv[2] if len(sys.argv) >= 3 else 1.0
+filter_1 = float(sys.argv[2]) if len(sys.argv) >= 3 else 100
+filter_1 = float(filter_1 / 100)
 # Coverage(subject)
 filter_1_place = 15
 filter_2 = sys.argv[3] if len(sys.argv) >= 4 else 98
@@ -34,7 +35,7 @@ for dir in dirList:
 
             # Single entry which will be added to dataArray
             buffer = []
-            # Counter of all lines that are above thresshold 
+            # Counter of all lines that are above threshold 
             counter = 0
             # Append the file name 
             buffer.append(dir)
@@ -42,7 +43,7 @@ for dir in dirList:
             for line in f:
                 # clean and split by tabs to get all columns 
                 line_buffer = line.rstrip().split('\t')
-                # If line is above thresshold, count this line 
+                # If line is above threshold, count this line 
                 if float(line_buffer[filter_1_place]) >= float(filter_1) and float(line_buffer[filter_2_place]) >= float(filter_2):
                     counter += 1
 
@@ -73,7 +74,7 @@ for box in dataArray:
     objects = objects + (box[0].split('.')[0].split('_')[-2],)
     # simple debugging output: antibiotic-group_name + hit_count
     print(box[0].split('.')[0].split('_')[-2]+"\t"+str(box[1]))
-    # Get the number of hits above thresshold for the y-axis
+    # Get the number of hits above threshold for the y-axis
     performance.append(box[1])
 # Get number of slots reserved for the y-axis
 y_pos = np.arange(len(objects))
@@ -86,7 +87,7 @@ plt.title(titel_x)
 
 # Tweak spacing to prevent clipping of tick-labels
 plt.subplots_adjust(bottom=0.25)
-plt.suptitle("Param: "+str(filter_1_place)+" >= "+str(filter_1)+" - "+str(filter_2_place)+" >= "+str(filter_2))
+plt.suptitle("Thresholds used: coverage >= "+str(filter_1 * 100)+"% - identity >= "+str(filter_2)+"%")
 # Set labels with score above each bar 
 for x, y in enumerate(performance):
         plt.gca().text(x, y + .15, str(y), color='grey', ha='center', fontsize=6)

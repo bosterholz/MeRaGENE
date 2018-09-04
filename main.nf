@@ -171,7 +171,7 @@ process createDotPlots {
 	
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
-	container 'bosterholz/meragene@sha256:36bfb52dcd65c4ac5124c0937ecb33938f584a011a23d0f34e8b97f85945e860'
+	container 'bosterholz/meragene@sha256:29e7c11f2754f22f98be57852de68eeb830cb9fecfc9d7e9bda9f3bc12a9f35c'
 
 	input:
 	set seqName, file(coverage) from getCoverage_output_dotPlot
@@ -195,7 +195,7 @@ process createBarChart {
 
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
-	container 'bosterholz/meragene@sha256:36bfb52dcd65c4ac5124c0937ecb33938f584a011a23d0f34e8b97f85945e860'
+	container 'bosterholz/meragene@sha256:29e7c11f2754f22f98be57852de68eeb830cb9fecfc9d7e9bda9f3bc12a9f35c'
 	// For createBarChart.py to work, all blast_cov files have to be present. collect() does not work, creating a multi-set Nextflow cannot handle.
 	// So groupTuple() is used collecting all input files, grouping them by their seqName to return a single set (seqName, blast_cov[array])  
 	input:
@@ -219,7 +219,7 @@ process createHTML {
 
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
-	container 'bosterholz/meragene@sha256:36bfb52dcd65c4ac5124c0937ecb33938f584a011a23d0f34e8b97f85945e860'
+	container 'bosterholz/meragene@sha256:29e7c11f2754f22f98be57852de68eeb830cb9fecfc9d7e9bda9f3bc12a9f35c'
 
 	input:
 	set val(seqName), file(png) from createChart_out.collect()

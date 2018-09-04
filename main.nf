@@ -172,7 +172,7 @@ process createDotPlots {
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
 	container 'bosterholz/meragene@sha256:29e7c11f2754f22f98be57852de68eeb830cb9fecfc9d7e9bda9f3bc12a9f35c'
-
+	
 	input:
 	set seqName, file(coverage) from getCoverage_output_dotPlot
 

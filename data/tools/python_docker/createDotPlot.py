@@ -24,11 +24,14 @@ with open(pathToFile,'r') as f:
         if float(line_buffer[15])*100 >= float(0.1) and float(line_buffer[2]) >= float(0.1):
             x.append(float(line_buffer[15])*100)
             y.append(float(line_buffer[2]))
-
+# Axis labels
 plt.ylabel(titel_y)
 plt.xlabel(titel_x)
 plt.title(os.path.basename(pathToFile))
 plt.axis([0, float(max(x))+2, 0, float(max(y))+2])
+# Show a faint background-grid
+plt.grid(which='major', linestyle='--', linewidth=0.2, color='gray', alpha=0.2)
+# Create the plot
 plt.plot( x, y, 'o', markersize=3, markerfacecolor='r', markeredgecolor='k',markeredgewidth=0.2)
 # If .use('svg') is used, this does not function!!! 
 #plt.show()

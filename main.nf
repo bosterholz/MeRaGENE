@@ -180,7 +180,7 @@ process createDotPlots {
 	output:
 	set seqName, file("*.png") into createPlot_out
 	
-	// A prebuild executable of the createDotPlot.py is used to execute this process
+	// Python script which is executed inside the python docker-container
 	script:
 	"""
 	python /app/createDotPlot.py ${coverage} .  

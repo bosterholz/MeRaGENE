@@ -8,7 +8,10 @@ branches:
 install:
 - curl -fsSL get.nextflow.io | bash
 script:
+# Create the nextflow.config needed to run MeRaGENE
 - echo "docker.enabled = true" >> nextflow.config
 - echo "docker.runOptions = '-u $(id -u):$(id -g)'" >> nextflow.config
+# Run MeRaGENE in test-mode
 - ./nextflow run main.nf --testRun
-- if [ $(diff data/test_data/example_output/clostridium_botulinum/ out/clostridium_botulinum/ | wc -l) -eq "5" ]; then echo "diff test passed"; else echo "diff test failed"; exit 1 ;fi 
+# Compare the generated output with the included perfect one 
+- if [ $(diff data/test_data/example_output/clostridium-botulinum/ out/clostridium-botulinum/ | wc -l) -eq "5" ]; then echo "diff test passed"; else echo "diff test failed"; exit 1 ;fi 

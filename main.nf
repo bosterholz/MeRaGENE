@@ -36,6 +36,7 @@ params.blast = 'blastx'
 params.blast_cpu = 4
 // Default e-value copied from blast
 params.evalue = '10'
+params.chunkSize = 100000
 // Pick the right blast-db depending on the blast version used
 if( params.blast.equals('blastx') || params.blast.equals('blastp') ){
 	params.blast_db = "$baseDir/data/databases/resFinderDB_23082018/*AA.fsa"
@@ -50,7 +51,7 @@ params.identity = '98'
 params.output_folder = "$baseDir/out"
 params.help = ''
 params.nfRequiredVersion = '0.30.0'
-params.version = '0.1.30'
+params.version = '0.1.31'
 params.s3 = ''
 params.s3_container = 'MeRaGENE'
 // If docker is used the blastDB path will not be included in the volume mountpoint because it is a path, not a file
@@ -81,8 +82,11 @@ if(params.s3){
 		${baseDir}/data/tools/minio/mc cp --recursive openstack/${params.s3_container}/input/ .
 		"""
 	}
-
-	s3_input.map{ file -> tuple(file.simpleName, file) }.set{ query }
+	// Get a "name(key), file" tuple as input. Replace all "_" with "-" to make further steps much easier 
+	s3_input.view { item -> if (item.simpleName.contains("_")){return "INFO! Underscores in the input file are not allowed. They will be changed to hyphens."}  }
+		.splitFasta( by: params.chunkSize, file: true )
+		.map{ file -> tuple(file.simpleName.replaceAll("_","-"), file) }
+		.set{ query }
 	// Set outDir manually for S3 mode. The outDir has to be set even if not used.
 	outDir = file("$baseDir/out") 
 }
@@ -91,7 +95,10 @@ else{
 // Set input parameters if S3 is not selected:
 query = Channel.fromPath( "${params.input_folder}/*", type: 'file' )
 	.ifEmpty { error "No file found in your input directory ${params.input_folder}"}
-	.map { file -> tuple(file.simpleName, file) }
+	.view { item -> if (item.simpleName.contains("_")){return "INFO! Underscores in the input file are not allowed. They will be changed to hyphens."}  }
+	.splitFasta( by: params.chunkSize, file: true )
+	// Get a "name(key), file" tuple as input. Replace all "_" with "-" to make further steps much easier
+	.map { file -> tuple(file.simpleName.replaceAll("_","-"), file) }
 outDir = file(params.output_folder)
 } 
 
@@ -106,8 +113,6 @@ process blast {
 	
 	// Tag each process with a unique name for better overview/debugging
 	tag {seqName + "-" + dbName }
-	// If the blast output is not named "empty.blast", a copy is put into the publishDir	
-	publishDir "${outDir}/${seqName}", mode: 'copy', saveAs: { it == 'empty.blast' ? null : it }
 	
 	// Docker blast container which this process is executed in 	
 	container 'biocontainers/blast:v2.2.31_cv1.13'
@@ -121,7 +126,8 @@ process blast {
 
 	output:
 	set seqName, file("*.blast") into blast_output
-	
+	file("*.blast") into collect_blast_input 
+
 	script:
 	// No channel with sets used, because *each set* do not work together. So baseName is determined in a single step  
 	dbName = db.baseName
@@ -133,24 +139,41 @@ process blast {
 	"""
 }
 
+// Due to chunking, the blast outputs are currently in pieces. This process reassembles them.
+process collectBlastOut {
+        
+	// Tag each process with a unique name for better overview/debugging	
+	tag {blast.getName()}
+	// After process completion a copy of the result is made in this folder
+	publishDir "${outDir}/${seqName}", mode: 'copy'
+
+	input:
+	// blast sometimes produces empty outputs. These have to be removed. Thereafter same named chunks are reassembled and the "name(key), file" tuple will be restored
+	set val(seqName), file(blast) from collect_blast_input.filter{!it.isEmpty()}.collectFile().map {item -> [ item.baseName.split("_")[-3], item ]}
+
+	output:
+	file(blast)
+
+	script:
+	"""
+	"""
+}
+
 // Empty blast outputs are removed by this filter step, [1] because it is a set
 blast_output.filter{!it[1].isEmpty()}.set{subject_covarage_input}
 
 // Calculate the missing subject covarage and add it to the blast output
 process getSubjectCoverage {
 	
-	echo true
 	// Tag each process with a unique name for better overview/debugging
 	tag {blast}
-	// After process completion a copy of the result is made in this folder 	
-	publishDir "${outDir}/${seqName}", mode: 'copy'
 
 	input:
 	set seqName, file(blast) from subject_covarage_input
 
 	output:
-	set seqName, file("${blast}.cov") into getCoverage_output_dotPlot 
-	set seqName, file("${blast}.cov") into getCoverage_output_barChart 
+	file("${blast}.cov") into getCoverage_output_dotPlot 
+	file("${blast}.cov") into getCoverage_output_barChart 
 
 	shell:
 	// Calculation: ( ( (SubjectAlignment_End - SubjectAlignment_Start + 1) / SubjectLength) * (Identity/100) ) 
@@ -166,19 +189,22 @@ process getSubjectCoverage {
 
 // Create a dot plot of the blast-coverage results 
 process createDotPlots {
-
+	// Tag each process with a unique name for better overview/debugging
 	tag {coverage}
-	
+	// After process completion a copy of the result is made in this folder
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
 	container 'bosterholz/meragene@sha256:a0d3de9697f45c4ceb9495668a47b06374cf9193f7e29803b987972b6696e806'
 	
 	input:
-	set seqName, file(coverage) from getCoverage_output_dotPlot
+	// collectFile() can only return a single stream of files. The name(key) values are lost. We have to get them back from the filename at this point.
+	set val(seqName), file(coverage) from getCoverage_output_dotPlot.collectFile().map {item -> [ item.baseName.split("_")[-3], item ]}
 
  
 	output:
 	set seqName, file("*.png") into createPlot_out
+	// The getSubjectCoverage output ist chunked. This process reassembles it anyway, so it can be saved here.  
+	file(coverage)
 	
 	// Python script which is executed inside the python docker-container
 	script:
@@ -190,16 +216,16 @@ process createDotPlots {
 
 // Create a dot plot of the blast-coverage results 
 process createBarChart {
-	
+	// Tag each process with a unique name for better overview/debugging
 	tag {seqName}
-
+	// After process completion a copy of the result is made in this folder
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
 	container 'bosterholz/meragene@sha256:a0d3de9697f45c4ceb9495668a47b06374cf9193f7e29803b987972b6696e806'
 	// For createBarChart.py to work, all blast_cov files have to be present. collect() does not work, creating a multi-set Nextflow cannot handle.
 	// So groupTuple() is used collecting all input files, grouping them by their seqName to return a single set (seqName, blast_cov[array])  
 	input:
-	set val(seqName), file(coverage) from getCoverage_output_barChart.groupTuple()
+	set val(seqName), file(coverage) from getCoverage_output_barChart.collectFile().map {item -> [ item.baseName.split("_")[-3], item ]}.groupTuple()
  
 	output:
 	set val(seqName), file("*.png") into createChart_out
@@ -212,18 +238,19 @@ process createBarChart {
 	"""
 }
 
+createChart_out.mix(createPlot_out).groupTuple().set {plot_out_mix}
+
 // Use all plots and generated results to build an independant output html
 process createHTML {
-	
+	// Tag each process with a unique name for better overview/debugging	
 	tag {seqName}
-
+	// After process completion a copy of the result is made in this folder
 	publishDir "${outDir}/${seqName}", mode: 'copy'
 
 	container 'bosterholz/meragene@sha256:a0d3de9697f45c4ceb9495668a47b06374cf9193f7e29803b987972b6696e806'
 
 	input:
-	set val(seqName), file(png) from createChart_out.collect()
-	set val(seqName2), file(dotplot) from createPlot_out.groupTuple()
+	set val(seqName), file(png) from plot_out_mix  
 	file(docker_anker)
 
 	output:
@@ -278,9 +305,18 @@ def help() {
 	log.info ""
 	log.info " Arguments:"
 	log.info "           --input_folder      Set new input folder path "
+	log.info "                               The input folder may contain one or more fasta files"
 	log.info "                               (default: ${params.input_folder})"
 	log.info "           --output_folder     Set new output folder path. "
 	log.info "                               (default: $baseDir/out)"
+	log.info "           --chunkSize         All fasta files are chunked to increase scalability."
+	log.info "                               Set the number of fasta entries per chunk."
+	log.info "                               A high chunkSize leads to fewer chunks, which is good"
+	log.info "                               for systems with less than 64 cores. On systems with"
+	log.info "                               >64 cores, it is advisible to lower the chunkSize."
+	log.info "                               This produces more parallel processes, which increases"
+	log.info "                               cpu usage. Be aware: Low chunkSizes raise hdd workload."
+	log.info "                               (default: $params.chunkSize)"
 	log.info "           --blast             Set the blast version used for this run "
 	log.info "                               Supportet: blastn, blastp, blastx, tblastn, tblastx"
 	log.info "                               (default: ${params.blast})"
@@ -309,7 +345,8 @@ def runMessage() {
 	log.info "output_folder : S3:/${params.s3_container}/output"}
 	else{
 	log.info "input_folder  : " + params.input_folder
-	log.info "output_folder : " + params.output_folder} 
+	log.info "output_folder : " + params.output_folder}
+	log.info "chunkSize     : " + params.chunkSize  
 	log.info "blast version : " + params.blast 
 	log.info "blast_db      : " + params.blast_db 
 	log.info "blast_cpu     : " + params.blast_cpu

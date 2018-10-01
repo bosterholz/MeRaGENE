@@ -32,10 +32,10 @@ if (params.testRun){
 	params.input_folder = "$baseDir/input"
 }
 
-params.blast = 'blastx'
+params.blast = 'blastp'
 params.blast_cpu = 4
 // Default e-value copied from blast
-params.evalue = '10'
+params.evalue = '1e-20'
 params.chunkSize = 100000
 // Pick the right blast-db depending on the blast version used
 if( params.blast.equals('blastx') || params.blast.equals('blastp') ){
@@ -291,14 +291,14 @@ def help() {
 	log.info ""
 	log.info " Options:"
 	log.info "           --help      Shows this help page"
-	log.info "           --s3        S3/Swift Mode. Input and Output are handled "
-	log.info "                       via S3/Swift by a minio client. A project folder"
-	log.info "                       located in the object storage root has to be selected."
-	log.info "                       This folder will be used to get the input data and upload"
-	log.info "                       the results. Use --s3_container \"folder\" to specify."
-	log.info "                       The input fasta has to be inside an \"input\" folder "
-	log.info "                       in the project folder. The S3/Swift credentials"
- 	log.info "                       are added to the \"nextflow.config\" in form of:"
+	log.info "           --s3        Object Storage Mode. Input and output are handled "
+	log.info "                       via an S3 enabled object storage by a minio client. A project"
+	log.info "                       directory located in the object storage has to be selected."
+	log.info "                       This folder will be used to download the input data and to"
+	log.info "                       upload the results. Use --s3_container \"FOLDER\" to specify"
+	log.info "                       a path. The input fasta files are to be placed inside an \"input\""
+	log.info "                       directory in this chosen project folder. The object storage"
+ 	log.info "                       credentials are to be added to the \"nextflow.config\" in form of:"
 	log.info "                       env.MC_HOSTS_openstack = 'https://ID:KEY@ENDPOINT:PORT'"
 	log.info "           --testRun   Test your installation by running MeRaGENE with test data."
 	log.info "                       Just set this flag. MeRaGENE will do the rest."	
@@ -313,14 +313,14 @@ def help() {
 	log.info "                               Set the number of fasta entries per chunk."
 	log.info "                               A high chunkSize leads to fewer chunks, which is good"
 	log.info "                               for systems with less than 64 cores. On systems with"
-	log.info "                               >64 cores, it is advisible to lower the chunkSize."
-	log.info "                               This produces more parallel processes, which increases"
+	log.info "                               >64 cores, it is advisable to lower the chunkSize."
+	log.info "                               This produces more parallel processes which increases"
 	log.info "                               cpu usage. Be aware: Low chunkSizes raise hdd workload."
 	log.info "                               (default: $params.chunkSize)"
-	log.info "           --blast             Set the blast version used for this run "
+	log.info "           --blast             Set the blast program used for this run "
 	log.info "                               Supportet: blastn, blastp, blastx, tblastn, tblastx"
 	log.info "                               (default: ${params.blast})"
-	log.info "           --blast_cpu         Set the amount of cpus used per blast process"
+	log.info "           --blast_cpu         Set the amount of cpus each blast process will use"
 	log.info "                               (default: ${params.blast_cpu})"
 	log.info "           --evalue            Set the e-value used for the blast processes"
 	log.info "                               (default: ${params.evalue})"
@@ -328,7 +328,7 @@ def help() {
 	log.info "                               (default: ${params.coverage} [unit = percent])"
 	log.info "           --identity          Set the identity threshold used for the barchart plot"
 	log.info "                               (default: ${params.identity} [unit = percent])"
-	log.info "           --s3_container      Set the project folder used in S3/Swift mode"
+	log.info "           --s3_container      Set the project folder used in Object Storage Mode"
 	log.info "                               (default: ${params.s3_container})"
 	log.info "                     "
 }

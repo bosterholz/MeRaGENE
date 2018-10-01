@@ -12,6 +12,6 @@ script:
 - echo "docker.enabled = true" >> nextflow.config
 - echo "docker.runOptions = '-u $(id -u):$(id -g)'" >> nextflow.config
 # Run MeRaGENE in test-mode
-- ./nextflow run main.nf --testRun --evalue 10
+- ./nextflow run main.nf --testRun --evalue 10 --blast blastx
 # Compare the generated output with the included perfect one 
 - if [ $(diff data/test_data/example_output/clostridium-botulinum/ out/clostridium-botulinum/ | wc -l) -eq "5" ]; then echo "diff test passed"; else echo "diff test failed"; exit 1 ;fi 

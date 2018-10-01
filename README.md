@@ -1,11 +1,11 @@
 # **MeRaGENE**
 
-#### A analysis pipeline for the identification of antibiotic resistance genes in metagenomes 
+#### An analysis pipeline for the identification of antibiotic resistance genes in metagenomes 
 
 [![Nextflow version][nextflow-badge]][nextflow-link]
 [![Travis build status][travis-badge]][travis-link]
 
-
+The metagenomics rapid gene identification pipeline (MeRaGENE) is build using the workflow management system [Nextflow][nextflow-link]. 
 
 [travis-badge]: https://img.shields.io/travis/bosterholz/MeRaGENE.svg?logo=travis&style=flat-square
 [travis-link]: https://travis-ci.org/bosterholz/MeRaGENE

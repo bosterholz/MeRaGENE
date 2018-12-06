@@ -5,11 +5,19 @@
 [![Nextflow version][nextflow-badge]][nextflow-link]
 [![Travis build status][travis-badge]][travis-link]
 
-The metagenomics rapid gene identification pipeline (MeRaGENE) is build using the workflow management system [Nextflow][nextflow-link]. Nextflows integration of the [Docker][docker-link] container technology allows MeRaGENE to be self-contained, producing reproducible results on any kind of system. All dependencies are handled in an automated fashion using [Docker][docker-link] and prebuild uniq Docker-Images from [Docker Hub][dockerHub-link]. 
+The metagenomics rapid gene identification pipeline (MeRaGENE) is build using the workflow management system [Nextflow][nextflow-link]. Nextflows integration of the [Docker][docker-link] container technology allows MeRaGENE to be self-contained, producing reproducible results on any kind of system. All dependencies are handled in an automated fashion using [Docker][docker-link] and prebuild uniq Docker-Images from [Docker Hub][dockerHub-link].  
 
 Although designed primarily for the use with cloud-environments, MeRaGENE should be able to run on any system that supports [Nextflow][nextflow-link] and [Docker][docker-link].
 
-## Quick start 
+## Quick start
+
+1. Download [Nextflow][nextflow-link]:
+`curl -s https://get.nextflow.io | bash`
+
+2. Download MeRaGENE and start a test run:
+`./nextflow run bosterholz/MeRaGENE -r dev --testRun --output_folder ./out`
+
+Thats it! Your current directory should now contain an out directory. Inside this directory are the results of a MeRaGENE test run. MeRaGENE is good to go on your system. 
 
 [travis-badge]: https://img.shields.io/travis/bosterholz/MeRaGENE.svg?logo=travis&style=flat-square
 [travis-link]: https://travis-ci.org/bosterholz/MeRaGENE

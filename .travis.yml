@@ -9,7 +9,6 @@ install:
 - curl -fsSL get.nextflow.io | bash
 script:
 # Create the nextflow.config needed to run MeRaGENE
-- echo "docker.enabled = true" >> nextflow.config
 - echo "docker.runOptions = '-u $(id -u):$(id -g)'" >> nextflow.config
 # Run MeRaGENE in test-mode
 - ./nextflow run main.nf --testRun --evalue 10 --blast blastx

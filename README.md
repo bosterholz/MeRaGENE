@@ -11,10 +11,10 @@ Although designed primarily for the use with cloud-environments, MeRaGENE should
 
 ## Quick start
 
-1. **Download [Nextflow][nextflow-link]:**
+1. **Download [Nextflow][nextflow-link]:**  
 	`curl -s https://get.nextflow.io | bash`
 
-2. **Download MeRaGENE and start a test run:**
+2. **Download MeRaGENE and start a test run:**  
 	`./nextflow run bosterholz/MeRaGENE -r dev --testRun --output_folder ./out`
 
 Thats it! Your current directory should now contain an out directory. Inside this directory are the results of a MeRaGENE test run. MeRaGENE is good to go on your system. 
